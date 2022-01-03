@@ -26,7 +26,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
 
         int v = this.getBlockState().getValue(VolcanoBlock.VISCOSITY);
 
-        for (int i = 1; i < 20; i++)
+        for (int i = 1; i < 10; i++)
         {
             BlockPos pos = this.getBlockPos().above(i);
             for (Direction d : Direction.values())
@@ -55,7 +55,6 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                         .setValue(FlowingBlock.VISCOSITY, v), 3);
             }
         }
-        return;
     }
 
 }

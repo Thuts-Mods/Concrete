@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CrossCollisionBlock;
@@ -40,6 +41,8 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     {
         super(2.0F, 2.0F, 16.0f, 16.0f, 16.0f, properties);
         initStateDefinition();
+        this.tickRateFall = 1;
+        this.tickRateFlow = 1;
         this.colour = DyeColor.LIGHT_GRAY;
     }
 
@@ -177,6 +180,28 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
             ret = this.setAmount(ret, this.getExistingAmount(ret, posTo, level));
         }
         return ret;
+    }
+
+    @Override
+    public BlockState empty(BlockState state)
+    {
+        BlockState empty = Concrete.REBAR_BLOCK.get().defaultBlockState();
+        empty = IFlowingBlock.copyValidTo(state, empty);
+        empty = empty.setValue(LEVEL, 0);
+        return empty;
+    }
+    
+    @Override
+    public void neighborChanged(BlockState us, Level level, BlockPos here, Block other, BlockPos changed, boolean bool)
+    {
+        if (level instanceof ServerLevel slevel) reScheduleTick(us, slevel, here);
+    }
+
+    @Override
+    public boolean canReplace(BlockState state)
+    {
+        if (state.getBlock() instanceof RebarBlock) return true;
+        return IFlowingBlock.super.canReplace(state);
     }
 
     @Override

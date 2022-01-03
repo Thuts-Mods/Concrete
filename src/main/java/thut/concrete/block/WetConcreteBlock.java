@@ -9,13 +9,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -28,7 +33,7 @@ import thut.api.block.flowing.MoltenBlock;
 import thut.api.item.ItemList;
 import thut.concrete.Concrete;
 
-public class WetConcreteBlock extends MoltenBlock
+public abstract class WetConcreteBlock extends MoltenBlock
 {
     public static final Map<ResourceLocation, RegistryObject<FlowingBlock>> REGMAP = Maps.newHashMap();
 
@@ -44,7 +49,7 @@ public class WetConcreteBlock extends MoltenBlock
                 2);
 
         RegistryObject<FlowingBlock> layer_reg = BLOCKS.register(layer,
-                () -> new WetConcreteBlock(layer_props).solidBlock(() -> ConcreteBlock.REGMAP.get(solid_layer).get())
+                () -> new PartialWet(layer_props).solidBlock(() -> ConcreteBlock.REGMAP.get(solid_layer).get())
                         .alternateBlock(() -> REGMAP.get(block_id).get()));
         REGMAP.put(layer_id, layer_reg);
 
@@ -60,7 +65,7 @@ public class WetConcreteBlock extends MoltenBlock
     }
 
     public static final ResourceLocation WETCONCRETEREPLACEABLE = new ResourceLocation("concrete:wet_concrete_replace");
-    
+
     private final DyeColor colour;
 
     public WetConcreteBlock(Properties properties)
@@ -87,13 +92,51 @@ public class WetConcreteBlock extends MoltenBlock
     @Override
     public RenderShape getRenderShape(BlockState state)
     {
-        return RenderShape.MODEL;
+        if (state.hasProperty(FALLING) && state.getValue(FALLING) || !state.hasProperty(LAYERS))
+            return RenderShape.MODEL;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
     public FluidState getFluidState(BlockState state)
     {
-        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : Fluids.EMPTY.defaultFluidState();
+        if (isFalling(state)) return Fluids.EMPTY.defaultFluidState();
+        int amt = this.getAmount(state) + 1;
+        if (amt < 2) amt = 2;
+        if (amt > 16) amt = 16;
+        return Concrete.CONCRETE_FLUID_FLOWING.get().defaultFluidState().setValue(FlowingFluid.LEVEL, amt / 2);
+    }
+
+    @Override
+    public ItemStack pickupBlock(LevelAccessor level, BlockPos pos, BlockState state)
+    {
+        int amt = this.getAmount(state);
+        if (amt == 16)
+        {
+            // We are linked to the concrete fluid normally, so we let that be
+            // picked up instead.
+            level.setBlock(pos, this.empty(state), 3);
+            if (!state.canSurvive(level, pos))
+            {
+                level.destroyBlock(pos, true);
+            }
+            return new ItemStack(Concrete.BUCKET.get());
+        }
+        // Below is super from SimpleWaterloggedBlock
+        if (state.getValue(BlockStateProperties.WATERLOGGED))
+        {
+            level.setBlock(pos, state.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false)), 3);
+            if (!state.canSurvive(level, pos))
+            {
+                level.destroyBlock(pos, true);
+            }
+
+            return new ItemStack(Items.WATER_BUCKET);
+        }
+        else
+        {
+            return ItemStack.EMPTY;
+        }
     }
 
     @Override
@@ -143,13 +186,12 @@ public class WetConcreteBlock extends MoltenBlock
         @Override
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
         {
-            builder.add(WATERLOGGED);// , DryConcrete.COLOUR);
+            builder.add(WATERLOGGED);
         }
 
         protected void initStateDefinition()
         {
             this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, Boolean.valueOf(false)));
-//                    .setValue(DryConcrete.COLOUR, DyeColor.LIGHT_GRAY));
         }
 
         @Override
@@ -159,4 +201,13 @@ public class WetConcreteBlock extends MoltenBlock
         }
     }
 
+    public static class PartialWet extends WetConcreteBlock
+    {
+
+        public PartialWet(Properties properties)
+        {
+            super(properties);
+        }
+
+    }
 }

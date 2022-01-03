@@ -20,7 +20,7 @@ import net.minecraftforge.registries.RegistryObject;
 import thut.api.block.IDyedBlock;
 import thut.api.block.flowing.IFlowingBlock;
 
-public class ReinforcedConcreteBlock extends RebarBlock implements IDyedBlock
+public abstract class ReinforcedConcreteBlock extends RebarBlock implements IDyedBlock
 {
     public static final Map<ResourceLocation, RegistryObject<Block>> REGMAP = Maps.newHashMap();
 
@@ -35,8 +35,8 @@ public class ReinforcedConcreteBlock extends RebarBlock implements IDyedBlock
         @SuppressWarnings("unchecked")
         RegistryObject<Block>[] arr = (RegistryObject<Block>[]) Array.newInstance(RegistryObject.class, 2);
 
-        RegistryObject<Block> layer_reg = BLOCKS.register(layer, () -> new ReinforcedConcreteBlock(layer_props, colour)
-                .alternateBlock(() -> REGMAP.get(block_id).get()));
+        RegistryObject<Block> layer_reg = BLOCKS.register(layer,
+                () -> new PartialDry(layer_props, colour).alternateBlock(() -> REGMAP.get(block_id).get()));
         REGMAP.put(layer_id, layer_reg);
         RegistryObject<Block> block_reg = BLOCKS.register(block, () -> new FullDry(block_props, colour));
         REGMAP.put(block_id, block_reg);
@@ -49,7 +49,7 @@ public class ReinforcedConcreteBlock extends RebarBlock implements IDyedBlock
 
     private Supplier<Block> convert;
 
-    public ReinforcedConcreteBlock(Properties properties, DyeColor colour)
+    protected ReinforcedConcreteBlock(Properties properties, DyeColor colour)
     {
         super(properties);
         this.colour = colour;
@@ -151,5 +151,15 @@ public class ReinforcedConcreteBlock extends RebarBlock implements IDyedBlock
         {
             return BYCOLOR.get(c);
         }
+    }
+
+    public static class PartialDry extends ReinforcedConcreteBlock
+    {
+
+        protected PartialDry(Properties properties, DyeColor colour)
+        {
+            super(properties, colour);
+        }
+
     }
 }

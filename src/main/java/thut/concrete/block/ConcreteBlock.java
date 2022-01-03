@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -22,7 +23,7 @@ import thut.api.block.IDyedBlock;
 import thut.api.block.flowing.FlowingBlock;
 import thut.api.block.flowing.SolidBlock;
 
-public class ConcreteBlock extends SolidBlock implements IDyedBlock
+public abstract class ConcreteBlock extends SolidBlock implements IDyedBlock
 {
     public static RegistryObject<FlowingBlock>[] makeDry(DeferredRegister<Block> BLOCKS, String modid, String layer,
             String block, BlockBehaviour.Properties layer_props, BlockBehaviour.Properties block_props, DyeColor colour)
@@ -35,7 +36,7 @@ public class ConcreteBlock extends SolidBlock implements IDyedBlock
                 2);
 
         RegistryObject<FlowingBlock> layer_reg = BLOCKS.register(layer,
-                () -> new ConcreteBlock(layer_props, colour).alternateBlock(() -> REGMAP.get(block_id).get()));
+                () -> new PartialDry(layer_props, colour).alternateBlock(() -> REGMAP.get(block_id).get()));
         REGMAP.put(layer_id, layer_reg);
         RegistryObject<FlowingBlock> block_reg = BLOCKS.register(block,
                 () -> new FullDry(block_props, colour).alternateBlock(() -> REGMAP.get(layer_id).get()));
@@ -51,7 +52,7 @@ public class ConcreteBlock extends SolidBlock implements IDyedBlock
 
     private final DyeColor colour;
 
-    public ConcreteBlock(Properties properties, DyeColor colour)
+    protected ConcreteBlock(Properties properties, DyeColor colour)
     {
         super(properties);
         this.colour = colour;
@@ -103,12 +104,10 @@ public class ConcreteBlock extends SolidBlock implements IDyedBlock
 
         @Override
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
-        {
-        }
+        {}
 
         protected void initStateDefinition()
-        {
-        }
+        {}
 
         @Override
         public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos)
@@ -121,5 +120,15 @@ public class ConcreteBlock extends SolidBlock implements IDyedBlock
         {
             return BYCOLOR.get(c);
         }
+    }
+
+    public static class PartialDry extends ConcreteBlock implements SimpleWaterloggedBlock
+    {
+
+        protected PartialDry(Properties properties, DyeColor colour)
+        {
+            super(properties, colour);
+        }
+
     }
 }

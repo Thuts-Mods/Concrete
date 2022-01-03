@@ -2,6 +2,7 @@ package thut.concrete;
 
 import java.lang.reflect.Array;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.google.common.collect.Sets;
 
@@ -9,18 +10,23 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fluids.FluidAttributes;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -37,7 +43,7 @@ import thut.concrete.block.ReinforcedConcreteBlock;
 import thut.concrete.block.VolcanoBlock;
 import thut.concrete.block.WetConcreteBlock;
 import thut.concrete.block.entity.VolcanoEntity;
-import thut.concrete.item.ConcreteBucket;
+import thut.concrete.fluid.DummyLiquidBlock;
 import thut.concrete.item.ConcreteDispenseBehaviour;
 import thut.concrete.item.PaintBrush;
 import thut.concrete.item.Smoother;
@@ -48,13 +54,13 @@ public class Concrete
 {
     public static final String MODID = "concrete";
 
-    public static final ResourceLocation FLUID_STILL = new ResourceLocation("minecraft:block/brown_mushroom_block");
-    public static final ResourceLocation FLUID_FLOWING = new ResourceLocation("minecraft:block/mushroom_stem");
-    public static final ResourceLocation FLUID_OVERLAY = new ResourceLocation("minecraft:block/obsidian");
+    public static final ResourceLocation FLUID_STILL = new ResourceLocation("concrete:block/wet_concrete_white");
+    public static final ResourceLocation FLUID_FLOWING = new ResourceLocation("concrete:block/wet_concrete_white");
+    public static final ResourceLocation FLUID_OVERLAY = new ResourceLocation("concrete:block/wet_concrete_white");
 
-    public static final DeferredRegister<Fluid> FLUIDS;
-    public static final DeferredRegister<Block> BLOCKS;
-    public static final DeferredRegister<Item> ITEMS;
+    public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS, MODID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 
     public static final DeferredRegister<BlockEntityType<?>> TILES;
 
@@ -81,11 +87,11 @@ public class Concrete
 
     public static final RegistryObject<RebarBlock> REBAR_BLOCK;
 
-    public static final RegistryObject<PaintBrush>[] BRUSHES = makeItemArr(DyeColor.values().length + 1);
+    public static final RegistryObject<Item>[] BRUSHES = makeItemArr(DyeColor.values().length + 1);
 
-    public static final RegistryObject<ConcreteBucket> BUCKET;
+    public static final RegistryObject<Item> BUCKET;
 
-    public static final RegistryObject<Smoother> SMOOTHER;
+    public static final RegistryObject<Item> SMOOTHER;
 
     public static final RegistryObject<Item> DUST_ITEM;
     public static final RegistryObject<Item> CEMENT_ITEM;
@@ -93,7 +99,28 @@ public class Concrete
     public static final RegistryObject<Item> CAO_ITEM;
     public static final RegistryObject<Item> CACO3_ITEM;
 
+    private static ForgeFlowingFluid.Properties makeProperties()
+    {
+        return new ForgeFlowingFluid.Properties(CONCRETE_FLUID, CONCRETE_FLUID_FLOWING,
+                FluidAttributes.builder(FLUID_STILL, FLUID_FLOWING).overlay(FLUID_OVERLAY).color(0xFFAAAAAA))
+                        .bucket(BUCKET).block(CONCRETE_FLUID_BLOCK);
+    }
+
+    private static Supplier<Block> getWetBlock()
+    {
+        return () -> WET_BLOCK.get();
+    }
+
+    public static RegistryObject<FlowingFluid> CONCRETE_FLUID = FLUIDS.register("concrete",
+            () -> new ForgeFlowingFluid.Source(makeProperties()));
+    public static RegistryObject<FlowingFluid> CONCRETE_FLUID_FLOWING = FLUIDS.register("concrete_flowing",
+            () -> new ForgeFlowingFluid.Flowing(makeProperties()));
+    public static final RegistryObject<DummyLiquidBlock> CONCRETE_FLUID_BLOCK = BLOCKS.register("concrete_fluid_block",
+            () -> new DummyLiquidBlock(CONCRETE_FLUID, getWetBlock(),
+                    Properties.of(Material.WATER).noCollission().strength(100.0F).noDrops()));
+
     private static final Set<RegistryObject<?>> NOTAB = Sets.newHashSet();
+    private static final Set<RegistryObject<?>> NOITEM = Sets.newHashSet();
 
     private static <T extends Block> RegistryObject<T>[] makeBlockArr(int i)
     {
@@ -111,10 +138,6 @@ public class Concrete
 
     static
     {
-        FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS, MODID);
-
-        BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-        ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
         TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MODID);
 
         BlockBehaviour.Properties layer_props = BlockBehaviour.Properties.of(Material.STONE).noOcclusion().randomTicks()
@@ -151,6 +174,8 @@ public class Concrete
         MOLTEN_LAYER = regs[0];
         MOLTEN_BLOCK = regs[1];
 
+        NOITEM.add(MOLTEN_LAYER);
+
         BlockBehaviour.Properties volc_props = BlockBehaviour.Properties.of(Material.BARRIER).noDrops();
         VOLCANO = BLOCKS.register("volcano", () -> new VolcanoBlock(volc_props));
 
@@ -170,6 +195,9 @@ public class Concrete
 
         WET_LAYER = regs[0];
         WET_BLOCK = regs[1];
+
+        NOITEM.add(WET_LAYER);
+        NOITEM.add(CONCRETE_FLUID_BLOCK);
 
         REBAR_BLOCK = BLOCKS.register("rebar", () -> new RebarBlock(
                 Properties.of(Material.METAL).noCollission().randomTicks().strength(100.0F).noDrops()));
@@ -221,8 +249,10 @@ public class Concrete
         Item.Properties no_paint = props;
         BRUSHES[DyeColor.values().length] = ITEMS.register("paint_brush", () -> new PaintBrush(no_paint, null));
 
-        Item.Properties bucket = new Item.Properties().tab(ThutCore.THUTITEMS);
-        BUCKET = ITEMS.register("concrete_bucket", () -> new ConcreteBucket(bucket));
+//        Item.Properties bucket = new Item.Properties().tab(ThutCore.THUTITEMS);
+//        BUCKET = ITEMS.register("concrete_bucket", () -> new ConcreteBucket(bucket));
+        BUCKET = ITEMS.register("concrete_bucket", () -> new BucketItem(CONCRETE_FLUID,
+                new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1).tab(ThutCore.THUTITEMS)));
 
         Item.Properties smoother = new Item.Properties().tab(ThutCore.THUTITEMS).durability(256);
         SMOOTHER = ITEMS.register("smoother", () -> new Smoother(smoother));
@@ -236,6 +266,7 @@ public class Concrete
         // Register the item blocks.
         for (final RegistryObject<Block> reg : BLOCKS.getEntries())
         {
+            if (NOITEM.contains(reg)) continue;
             props = new Item.Properties();
             if (!NOTAB.contains(reg)) props = props.tab(ThutCore.THUTITEMS);
             Item.Properties use = props;
@@ -270,8 +301,8 @@ public class Concrete
     public void loadComplete(FMLLoadCompleteEvent event)
     {
         event.enqueueWork(() -> {
-            DispenserBlock.registerBehavior(BUCKET.get(), new ConcreteDispenseBehaviour());
-
+            DispenserBlock.registerBehavior(BUCKET.get(), ConcreteDispenseBehaviour.INSTANCE);
+            DispenserBlock.registerBehavior(WET_BLOCK.get(), ConcreteDispenseBehaviour.INSTANCE);
         });
     }
 }

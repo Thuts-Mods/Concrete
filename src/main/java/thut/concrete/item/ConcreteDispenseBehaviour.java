@@ -11,11 +11,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import thut.api.block.flowing.IFlowingBlock;
 import thut.concrete.Concrete;
-import thut.concrete.block.ConcreteBlock;
-import thut.concrete.block.WetConcreteBlock;
 
 public class ConcreteDispenseBehaviour implements DispenseItemBehavior
 {
+
+    public static final DispenseItemBehavior INSTANCE = new ConcreteDispenseBehaviour();
 
     @Override
     public ItemStack dispense(BlockSource source, ItemStack stack)
@@ -34,16 +34,16 @@ public class ConcreteDispenseBehaviour implements DispenseItemBehavior
         BlockState concrete = Concrete.WET_BLOCK.get().defaultBlockState();
         if (concrete.getBlock() instanceof IFlowingBlock b)
         {
-            if (b.canReplace(state) || state.getBlock() instanceof ConcreteBlock
-                    || state.getBlock() instanceof WetConcreteBlock)
+            int amt = 0;
+            if (b.canReplace(state) && (amt = b.getAmount(state)) != 16 && amt >= 0)
             {
                 level.setBlock(pos, concrete, 3);
-                ItemStack newStack = new ItemStack(Items.BUCKET);
+                ItemStack newStack = stack;
+                if (stack.getItem() == Concrete.BUCKET.get()) newStack = new ItemStack(Items.BUCKET);
+                else stack.split(1);
                 return newStack;
             }
         }
-        if (stack.isEmpty()) stack = new ItemStack(Items.BUCKET);
-
         return stack;
     }
 
