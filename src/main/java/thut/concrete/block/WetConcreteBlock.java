@@ -25,6 +25,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import thut.api.block.flowing.FlowingBlock;
 import thut.api.block.flowing.MoltenBlock;
+import thut.api.item.ItemList;
 import thut.concrete.Concrete;
 
 public class WetConcreteBlock extends MoltenBlock
@@ -58,6 +59,8 @@ public class WetConcreteBlock extends MoltenBlock
         return arr;
     }
 
+    public static final ResourceLocation WETCONCRETEREPLACEABLE = new ResourceLocation("concrete:wet_concrete_replace");
+    
     private final DyeColor colour;
 
     public WetConcreteBlock(Properties properties)
@@ -103,6 +106,20 @@ public class WetConcreteBlock extends MoltenBlock
             return ret;
         }
         return super.getMergeResult(mergeFrom, mergeInto, posTo, level);
+    }
+
+    @Override
+    public boolean canReplace(BlockState state, BlockPos pos, ServerLevel level)
+    {
+        return canReplace(state);
+    }
+
+    @Override
+    public boolean canReplace(BlockState state)
+    {
+        if (state.isAir()) return true;
+        if (state.canBeReplaced(Fluids.FLOWING_WATER)) return true;
+        return ItemList.is(WETCONCRETEREPLACEABLE, state);
     }
 
     public DyeColor getColour()
