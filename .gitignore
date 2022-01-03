@@ -1,0 +1,28 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+.recommenders/*
+.gradle*
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build/
+
+# other
+eclipse
+run
+*.blend1
+logs/*
+/.apt_generated/
+/.apt_generated_tests/
+/src/generated/*

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "name": "light_gray_reinforced_concrete_layer",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "concrete:reinforced_concrete_layer_light_gray"
+        }
+      ]
+    }
+  ]
+}

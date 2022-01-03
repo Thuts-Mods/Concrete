@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+license="All rights reserved"
+
+issueTrackerURL="https://github.com/Thuts-Mods/Concrete/issues"
+
+[[mods]]
+    modId="concrete"
+    version="${file.jarVersion}"
+    displayName="Thut Concrete"
+    authors="Thutmose"
+    description='''
+    flowing, Casting Concrete for Minecraft!
+    '''
