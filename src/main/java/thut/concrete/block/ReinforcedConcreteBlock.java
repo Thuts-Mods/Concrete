@@ -86,7 +86,7 @@ public abstract class ReinforcedConcreteBlock extends RebarBlock implements IDye
     }
 
     @Override
-    public boolean flows()
+    public boolean flows(BlockState state)
     {
         return false;
     }

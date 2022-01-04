@@ -6,17 +6,20 @@ import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -30,6 +33,7 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
 
     protected int tickRateFall = 150;
     protected int tickRateFlow = 10;
+    public float hardenRate = 0.025f;
 
     Supplier<Block> wetConcrete;
     Supplier<Block> dry_layer;
@@ -105,19 +109,10 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
         BlockState blockstate2 = blockgetter.getBlockState(blockpos3);
         BlockState blockstate3 = blockgetter.getBlockState(blockpos4);
         return super.getStateForPlacement(p_53304_)
-                .setValue(
-                        NORTH,
-                        Boolean.valueOf(this.connectsTo(blockstate,
-                                blockstate.isFaceSturdy(blockgetter, blockpos1, Direction.SOUTH), Direction.SOUTH)))
-                .setValue(EAST,
-                        Boolean.valueOf(this.connectsTo(blockstate1,
-                                blockstate1.isFaceSturdy(blockgetter, blockpos2, Direction.WEST), Direction.WEST)))
-                .setValue(SOUTH,
-                        Boolean.valueOf(this.connectsTo(blockstate2,
-                                blockstate2.isFaceSturdy(blockgetter, blockpos3, Direction.NORTH), Direction.NORTH)))
-                .setValue(WEST,
-                        Boolean.valueOf(this.connectsTo(blockstate3,
-                                blockstate3.isFaceSturdy(blockgetter, blockpos4, Direction.EAST), Direction.EAST)))
+                .setValue(NORTH, Boolean.valueOf(this.connectsTo(blockstate, true, Direction.SOUTH)))
+                .setValue(EAST, Boolean.valueOf(this.connectsTo(blockstate1, true, Direction.WEST)))
+                .setValue(SOUTH, Boolean.valueOf(this.connectsTo(blockstate2, true, Direction.NORTH)))
+                .setValue(WEST, Boolean.valueOf(this.connectsTo(blockstate3, true, Direction.EAST)))
                 .setValue(IFlowingBlock.WATERLOGGED, Boolean.valueOf(fluidstate.getType() == Fluids.WATER));
     }
 
@@ -127,8 +122,8 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
             BlockPos p_53327_, BlockPos p_53328_)
     {
         return p_53324_.getAxis().getPlane() == Direction.Plane.HORIZONTAL
-                ? p_53323_.setValue(PROPERTY_BY_DIRECTION.get(p_53324_), Boolean.valueOf(this.connectsTo(p_53325_,
-                        p_53325_.isFaceSturdy(p_53326_, p_53328_, p_53324_.getOpposite()), p_53324_.getOpposite())))
+                ? p_53323_.setValue(PROPERTY_BY_DIRECTION.get(p_53324_),
+                        Boolean.valueOf(this.connectsTo(p_53325_, true, p_53324_.getOpposite())))
                 : super.updateShape(p_53323_, p_53324_, p_53325_, p_53326_, p_53327_, p_53328_);
     }
 
@@ -151,10 +146,35 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     }
 
     @Override
+    public FluidState getFluidState(BlockState state)
+    {
+        if (isFalling(state)) return Fluids.EMPTY.defaultFluidState();
+        int amt = this.getAmount(state);
+        if (amt == 0) return super.getFluidState(state);
+        if (amt < 2) amt = 2;
+        if (amt > 16) amt = 16;
+        return Concrete.CONCRETE_FLUID_FLOWING.get().defaultFluidState().setValue(FlowingFluid.LEVEL, amt / 2);
+    }
+
+    @Override
+    public boolean flows(BlockState state)
+    {
+        if (state.hasProperty(LEVEL)) return state.getValue(LEVEL) > 0;
+        return IFlowingBlock.super.flows(state);
+    }
+
+    @Override
     public int getAmount(BlockState state)
     {
         if (state.hasProperty(LEVEL)) return state.getValue(LEVEL);
         return IFlowingBlock.super.getAmount(state);
+    }
+
+    @Override
+    public boolean isFalling(BlockState state)
+    {
+        if (this.getAmount(state) <= 0) return false;
+        return IFlowingBlock.super.isFalling(state);
     }
 
     @Override
@@ -185,12 +205,13 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     @Override
     public BlockState empty(BlockState state)
     {
+        if (!(state.getBlock() instanceof RebarBlock)) return IFlowingBlock.super.empty(state);
         BlockState empty = Concrete.REBAR_BLOCK.get().defaultBlockState();
         empty = IFlowingBlock.copyValidTo(state, empty);
         empty = empty.setValue(LEVEL, 0);
         return empty;
     }
-    
+
     @Override
     public void neighborChanged(BlockState us, Level level, BlockPos here, Block other, BlockPos changed, boolean bool)
     {
@@ -214,6 +235,11 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     @Override
     public void onStableTick(BlockState state, ServerLevel level, BlockPos pos, Random random)
     {
+        if (random.nextDouble() > hardenRate)
+        {
+            reScheduleTick(state, level, pos);
+            return;
+        }
         int index = colour.ordinal();
         int amt = this.getAmount(state);
         Block blockTo = amt == 16 ? Concrete.REF_BLOCK[index].get() : Concrete.REF_LAYER[index].get();
@@ -226,5 +252,19 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     public void tick(BlockState state, ServerLevel level, BlockPos pos, Random random)
     {
         this.doTick(state, level, pos, random);
+    }
+
+    @Override
+    public boolean isScaffolding(BlockState state, LevelReader world, BlockPos pos, LivingEntity entity)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean isLadder(BlockState state, LevelReader world, BlockPos pos, LivingEntity entity)
+    {
+        int i = this.getAABBIndex(state);
+        if (i == 0) return false;
+        return super.isLadder(state, world, pos, entity);
     }
 }

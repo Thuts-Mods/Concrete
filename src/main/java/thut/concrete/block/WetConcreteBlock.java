@@ -53,8 +53,8 @@ public abstract class WetConcreteBlock extends MoltenBlock
                         .alternateBlock(() -> REGMAP.get(block_id).get()));
         REGMAP.put(layer_id, layer_reg);
 
-        RegistryObject<FlowingBlock> block_reg = BLOCKS.register(block,
-                () -> new FullWet(block_props).solidBlock(() -> ConcreteBlock.REGMAP.get(solid_block).get())
+        RegistryObject<FlowingBlock> block_reg = BLOCKS.register(block, // ConcreteBlock.REGMAP.get(solid_block).get()
+                () -> new FullWet(block_props).solidBlock(() -> ConcreteBlock.VANILLA.get(DyeColor.LIGHT_GRAY))
                         .alternateBlock(() -> REGMAP.get(layer_id).get()));
         REGMAP.put(block_id, block_reg);
 
@@ -71,6 +71,7 @@ public abstract class WetConcreteBlock extends MoltenBlock
     public WetConcreteBlock(Properties properties)
     {
         super(properties);
+        this.hardenRate = 0.025f;
         this.tickRateFall = 1;
         this.tickRateFlow = 1;
         this.colour = DyeColor.LIGHT_GRAY;
@@ -92,7 +93,8 @@ public abstract class WetConcreteBlock extends MoltenBlock
     @Override
     public RenderShape getRenderShape(BlockState state)
     {
-        if (state.hasProperty(FALLING) && state.getValue(FALLING) || !state.hasProperty(LAYERS))
+        if (state.hasProperty(FALLING) && state.getValue(FALLING) || !state.hasProperty(LAYERS)
+                || state.getValue(WATERLOGGED))
             return RenderShape.MODEL;
         return RenderShape.INVISIBLE;
     }
@@ -100,6 +102,7 @@ public abstract class WetConcreteBlock extends MoltenBlock
     @Override
     public FluidState getFluidState(BlockState state)
     {
+        if (state.getValue(WATERLOGGED)) return Fluids.WATER.getSource(false);
         if (isFalling(state)) return Fluids.EMPTY.defaultFluidState();
         int amt = this.getAmount(state) + 1;
         if (amt < 2) amt = 2;
@@ -149,6 +152,14 @@ public abstract class WetConcreteBlock extends MoltenBlock
             return ret;
         }
         return super.getMergeResult(mergeFrom, mergeInto, posTo, level);
+    }
+
+    @Override
+    protected void checkSolid()
+    {
+        if (solid_full != null) return;
+        this.solid_full = ConcreteBlock.VANILLA.get(DyeColor.LIGHT_GRAY).defaultBlockState();
+        this.solid_layer = Concrete.DRY_LAYER[DyeColor.LIGHT_GRAY.ordinal()].get().defaultBlockState();
     }
 
     @Override

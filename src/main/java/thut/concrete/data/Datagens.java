@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.compress.utils.Lists;
 
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
@@ -62,7 +63,7 @@ public class Datagens
             pickaxe_mine.add(Concrete.SOLID_LAYER.get());
 
             for (RegistryObject<FlowingBlock> reg : Concrete.DRY_LAYER) pickaxe_mine.add(reg.get());
-            for (RegistryObject<FlowingBlock> reg : Concrete.DRY_BLOCK) pickaxe_mine.add(reg.get());
+//            for (RegistryObject<FlowingBlock> reg : Concrete.DRY_BLOCK) pickaxe_mine.add(reg.get());
 
             for (RegistryObject<Block> reg : Concrete.REF_LAYER)
             {
@@ -144,14 +145,15 @@ public class Datagens
             add(Concrete.WET_BLOCK.get(), "Liquid concrete block");
 
             add(Concrete.REBAR_BLOCK.get(), "Rebar");
+            add(Concrete.FORMWORK_BLOCK.get(), "Formwork");
 
             for (int i = 0; i < DyeColor.values().length; i++)
             {
                 DyeColor c = DyeColor.values()[i];
-                String colour = c.getName().substring(0, 1).toUpperCase() + c.getName().substring(1);
+                String colour = I18n.get("color.minecraft." + c.getName());
 
                 add(Concrete.DRY_LAYER[i].get(), colour + " concrete layer");
-                add(Concrete.DRY_BLOCK[i].get(), colour + " concrete block");
+//                add(Concrete.DRY_BLOCK[i].get(), colour + " concrete block");
 
                 add(Concrete.REF_LAYER[i].get(), colour + " reinforced concrete layer");
                 add(Concrete.REF_BLOCK[i].get(), colour + " reinforced concrete block");
@@ -161,7 +163,7 @@ public class Datagens
             for (int i = 0; i < DyeColor.values().length; i++)
             {
                 DyeColor c = DyeColor.values()[i];
-                String colour = c.getName().substring(0, 1).toUpperCase() + c.getName().substring(1);
+                String colour = I18n.get("color.minecraft." + c.getName());
                 add(Concrete.BRUSHES[i].get(), colour + " paint brush");
             }
             add(Concrete.BRUSHES[DyeColor.values().length].get(), "Paint brush");
@@ -171,7 +173,7 @@ public class Datagens
             add(Concrete.DUST_ITEM.get(), "Rock dust");
             add(Concrete.CEMENT_ITEM.get(), "Cement");
 
-            add(Concrete.CAO_ITEM.get(), "Calcium Oxide");
+            add(Concrete.CAO_ITEM.get(), "Lime");
             add(Concrete.CACO3_ITEM.get(), "Calcium Carbonate");
         }
     }
@@ -200,9 +202,8 @@ public class Datagens
                 String colour = c.getName();
 
                 addSilkyLayer(Concrete.DRY_LAYER[i].get(), Concrete.DUST_ITEM.get(), colour + "_concrete_layer");
-                addSimple(Concrete.DRY_BLOCK[i].get(), colour + "_concrete_block");
+                addSilkyLayer(Concrete.REF_LAYER[i].get(), Concrete.DUST_ITEM.get(), colour + "_reinforced_concrete_layer");
 
-                addSimple(Concrete.REF_LAYER[i].get(), colour + "_reinforced_concrete_layer");
                 addSimple(Concrete.REF_BLOCK[i].get(), colour + "_reinforced_concrete_block");
             }
         }

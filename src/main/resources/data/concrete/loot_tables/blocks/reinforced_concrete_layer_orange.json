@@ -2,13 +2,13 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "name": "orange_reinforced_concrete_layer",
+      "name": "rebar",
       "rolls": 1.0,
       "bonus_rolls": 0.0,
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "concrete:reinforced_concrete_layer_orange"
+          "name": "concrete:rebar"
         }
       ]
     }

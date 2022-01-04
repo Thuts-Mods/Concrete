@@ -2,13 +2,13 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "name": "brown_concrete_block",
+      "name": "formwork",
       "rolls": 1.0,
       "bonus_rolls": 0.0,
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "concrete:concrete_block_brown"
+          "name": "concrete:formwork"
         }
       ]
     }

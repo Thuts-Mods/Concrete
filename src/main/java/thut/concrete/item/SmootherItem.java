@@ -13,10 +13,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import thut.api.block.flowing.IFlowingBlock;
 
-public class Smoother extends Item
+public class SmootherItem extends Item
 {
 
-    public Smoother(Properties properties)
+    public SmootherItem(Properties properties)
     {
         super(properties);
     }
@@ -28,7 +28,7 @@ public class Smoother extends Item
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
 
-        if (state.getBlock() instanceof IFlowingBlock b && !b.flows() && !b.isFullBlock())
+        if (state.getBlock() instanceof IFlowingBlock b && !b.flows(state) && !b.isFullBlock())
         {
             int r = 1;
             int amt = b.getAmount(state);
@@ -38,7 +38,7 @@ public class Smoother extends Item
             {
                 pos = context.getClickedPos().offset(x, 0, z);
                 state = level.getBlockState(pos);
-                if (state.getBlock() instanceof IFlowingBlock b2 && !b2.flows() && !b2.isFullBlock())
+                if (state.getBlock() instanceof IFlowingBlock b2 && !b2.flows(state) && !b2.isFullBlock())
                 {
                     int amt2 = b2.getAmount(state);
                     if (amt2 >= amt && level instanceof ServerLevel slevel)

@@ -308,12 +308,12 @@ def make_concrete_state(name, override=None, air=False, value=None):
         layer_name = name + '_layer_' + value
         block_name = name + '_block_' + value
         air_name = name + '_air_' + value
-        tex_name = name + '_' + value
+        tex_name = 'minecraft:block/' + value + '_concrete'
 
         if override is not None:
             layer_name = override + '_layer_' + value
             block_name = override + '_block_' + value
-            tex_name = override + '_' + value
+            # tex_name = override + '_' + value
             air_name = override + '_air_' + value
 
     else:
@@ -337,7 +337,7 @@ def make_concrete_state(name, override=None, air=False, value=None):
     state = json.dumps(obj, ensure_ascii=False, indent=2)
 
     layer = {}
-    layer["texture"] = f'{path}{tex_name}'
+    layer["texture"] = f'{tex_name}'
     layer["model"] = f'{path}{block_name}'
     obj_b["variants"][f""] = layer
 
@@ -412,10 +412,11 @@ def make_concrete_block(name, air=False, value=None):
     path = 'concrete:block/'
     if value is not None:
         _name = name + '_'+value
+        tex = 'minecraft:block/' + value + '_concrete'
     else:
         _name = name
+        tex = f'{path}{_name}'
 
-    tex = f'{path}{_name}'
     if value is not None:
         air_name = name + '_air_' + value
     else:

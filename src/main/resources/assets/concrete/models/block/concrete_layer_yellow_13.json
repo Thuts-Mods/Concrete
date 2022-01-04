@@ -1,6 +1,6 @@
 {
     "parent": "concrete:block/layered_13",
     "textures": {
-        "texture": "concrete:block/concrete_yellow"
+        "texture": "minecraft:block/yellow_concrete"
     }
 }
