@@ -32,15 +32,6 @@ public class PaintBrush extends Item
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
-        ItemStack stack = context.getItemInHand();
-
-        if (context.getPlayer() instanceof ServerPlayer player)
-        {
-            System.out.println(stack + " " + stack.getDamageValue() + " " + stack.getMaxDamage());
-            boolean broke = stack.hurt(1, player.getRandom(), player);
-            if (broke) stack = new ItemStack(Concrete.BRUSHES[16].get());
-            player.setItemInHand(context.getHand(), stack);
-        }
         
         if (state.getBlock() instanceof IDyedBlock b)
         {
@@ -48,6 +39,13 @@ public class PaintBrush extends Item
             {
                 BlockState painted = IFlowingBlock.copyValidTo(state, b.getFor(colour).defaultBlockState());
                 level.setBlock(pos, painted, 3);
+                ItemStack stack = context.getItemInHand();
+                if (context.getPlayer() instanceof ServerPlayer player)
+                {
+                    boolean broke = stack.hurt(1, player.getRandom(), player);
+                    if (broke) stack = new ItemStack(Concrete.BRUSHES[16].get());
+                    player.setItemInHand(context.getHand(), stack);
+                }
                 return InteractionResult.sidedSuccess(level.isClientSide());
             }
         }
@@ -56,6 +54,13 @@ public class PaintBrush extends Item
             DyeColor old = ConcreteBlock.VANILLAREV.get(state.getBlock());
             if (old != this.colour)
             {
+                ItemStack stack = context.getItemInHand();
+                if (context.getPlayer() instanceof ServerPlayer player)
+                {
+                    boolean broke = stack.hurt(1, player.getRandom(), player);
+                    if (broke) stack = new ItemStack(Concrete.BRUSHES[16].get());
+                    player.setItemInHand(context.getHand(), stack);
+                }
                 Block newBlock = ConcreteBlock.VANILLA.get(colour);
                 level.setBlock(pos, newBlock.defaultBlockState(), 3);
                 return InteractionResult.sidedSuccess(level.isClientSide());

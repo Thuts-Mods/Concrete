@@ -60,7 +60,11 @@ public class PaintBrushRecipe extends CustomRecipe
             if (stack.isEmpty()) continue;
             boolean isBrush = stack.getItem() instanceof PaintBrush br;
             if (isBrush && brush) return false;
-            else if (isBrush) brush = true;
+            else if (isBrush)
+            {
+                brush = true;
+                continue;
+            }
             final Tag<Item> dyeTag = Tags.Items.DYES;
             if (stack.is(dyeTag))
             {
