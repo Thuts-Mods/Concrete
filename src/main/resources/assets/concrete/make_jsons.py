@@ -222,6 +222,8 @@ rots["north"] = {}
 rots["east"] = {"y":90}
 rots["south"] = {"y":180}
 rots["west"] = {"y":270}
+rots["up"] = {"x":270}
+rots["down"] = {"x":90}
 
 true = True
 
@@ -234,16 +236,25 @@ def make_rebar_internal(name,concrete,level,item="rebar_post", state_name=None, 
     # The post in the middle
     apply = {}
     apply["model"] = f"{path}rebar_post"
-
+    apply["uvlock"] = true
     condition = {}
-
-    if level == 'level':
-        when = {}
-        when[level] = "0"
-        condition["when"] = when
-
     condition["apply"] = apply
+    obj["multipart"].append(condition)
 
+    apply = {}
+    apply["model"] = f"{path}rebar_post"
+    apply["uvlock"] = true
+    apply["y"] = 90
+    condition = {}
+    condition["apply"] = apply
+    obj["multipart"].append(condition)
+
+    apply = {}
+    apply["model"] = f"{path}rebar_post"
+    apply["uvlock"] = true
+    apply["x"] = 90
+    condition = {}
+    condition["apply"] = apply
     obj["multipart"].append(condition)
 
     # The sides connecting outwards
@@ -262,19 +273,19 @@ def make_rebar_internal(name,concrete,level,item="rebar_post", state_name=None, 
         obj["multipart"].append(condition)
 
     # The concrete
-    for i in range(15):
+    if level != 'level':
+        for i in range(15):
 
-        model_key = f'{path}{concrete}_layer_{i+1}'
+            model_key = f'{path}{concrete}_layer_{i+1}'
+            if value is not None:
+                model_key = f'{path}{concrete}_layer_{value}_{i+1}'
+
+            obj["multipart"].append({'when':{level:i+1},"apply":{"model":model_key}})
+
+        model_key = f'{path}{concrete}_block'
         if value is not None:
-            model_key = f'{path}{concrete}_layer_{value}_{i+1}'
-
-        obj["multipart"].append({'when':{level:i+1},"apply":{"model":model_key}})
-        obj["multipart"].append({'when':{level:i+1},"apply":{"model":f"{path}rebar_post"}})
-
-    model_key = f'{path}{concrete}_block'
-    if value is not None:
-        model_key = f'{path}{concrete}_block_{value}'
-    obj["multipart"].append({'when':{level:16},"apply":{"model":model_key}})
+            model_key = f'{path}{concrete}_block_{value}'
+        obj["multipart"].append({'when':{level:16},"apply":{"model":model_key}})
 
     state = json.dumps(obj, ensure_ascii=False, indent=2)
 

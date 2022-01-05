@@ -8,9 +8,11 @@ import java.util.function.Supplier;
 import com.google.common.collect.Maps;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,13 +60,22 @@ public abstract class ReinforcedConcreteBlock extends RebarBlock implements IDye
 
     protected void initStateDefinition()
     {
-        registerDefaultState(getStateDefinition().any().setValue(IFlowingBlock.WATERLOGGED, false).setValue(LAYERS, 1));
+        registerDefaultState(getStateDefinition().any().setValue(IFlowingBlock.WATERLOGGED, false).setValue(LAYERS, 1)
+                .setValue(RUSTY, true));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
     {
-        builder.add(NORTH, EAST, WEST, SOUTH, IFlowingBlock.WATERLOGGED, LAYERS);
+        builder.add(NORTH, EAST, WEST, SOUTH, UP, DOWN, IFlowingBlock.WATERLOGGED, LAYERS, RUSTY);
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState otherState, LevelAccessor level,
+            BlockPos pos_1, BlockPos pos_2)
+    {
+//        return super.updateShape(state, direction, otherState, level, pos_1, pos_2);
+        return state;
     }
 
     @Override

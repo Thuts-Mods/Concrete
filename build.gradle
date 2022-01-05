@@ -87,7 +87,7 @@ dependencies {
     
     // Here we import the version of pokecube to use. Note that the curseforge page is 'aoi' rather than 'aio'
     // fg.deobf("curse.maven:thutcore-${version_thutcore_sup}")
-    implementation "blank:thutcore-1.18.1-8.6.0-deobf"
+    implementation "blank:thutcore-1.18.1-8.6.2-deobf"
 }
 
 jar {

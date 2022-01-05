@@ -32,7 +32,14 @@ public class PaintBrush extends Item
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
-        
+
+//        if (level instanceof ServerLevel)
+//        {
+//            ExplosionCustom boom = new ExplosionCustom(level, null, Vector3.getNewVector().set(pos), 200);
+//            boom.breaker = new ChamberBoom(4);
+//            boom.doExplosion();
+//        }
+
         if (state.getBlock() instanceof IDyedBlock b)
         {
             if (colour != b.getColour() && b.getFor(colour) != null)

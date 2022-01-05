@@ -14,10 +14,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.FluidState;
@@ -27,9 +28,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import thut.api.block.flowing.IFlowingBlock;
 import thut.concrete.Concrete;
 
-public class RebarBlock extends CrossCollisionBlock implements SimpleWaterloggedBlock, IFlowingBlock
+public class RebarBlock extends PipeBlock implements SimpleWaterloggedBlock, IFlowingBlock
 {
     public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 16);
+    public static final BooleanProperty RUSTY = BooleanProperty.create("rusty");
 
     protected int tickRateFall = 150;
     protected int tickRateFlow = 10;
@@ -43,7 +45,7 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
 
     public RebarBlock(Properties properties)
     {
-        super(2.0F, 2.0F, 16.0f, 16.0f, 16.0f, properties);
+        super(0.1875f, properties);
         initStateDefinition();
         this.tickRateFall = 1;
         this.tickRateFlow = 1;
@@ -52,13 +54,14 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
 
     protected void initStateDefinition()
     {
-        registerDefaultState(getStateDefinition().any().setValue(IFlowingBlock.WATERLOGGED, false).setValue(LEVEL, 0));
+        registerDefaultState(getStateDefinition().any().setValue(IFlowingBlock.WATERLOGGED, false).setValue(LEVEL, 0)
+                .setValue(RUSTY, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
     {
-        builder.add(NORTH, EAST, WEST, SOUTH, IFlowingBlock.WATERLOGGED, LEVEL);
+        builder.add(NORTH, EAST, WEST, SOUTH, UP, DOWN, IFlowingBlock.WATERLOGGED, LEVEL, RUSTY);
     }
 
     @Override
@@ -77,16 +80,16 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     }
 
     @Override
-    public VoxelShape getVisualShape(BlockState p_53311_, BlockGetter p_53312_, BlockPos p_53313_,
-            CollisionContext p_53314_)
+    public VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context)
     {
-        return this.getShape(p_53311_, p_53312_, p_53313_, p_53314_);
+        return this.getShape(state, level, pos, context);
     }
 
-    public boolean connectsTo(BlockState p_53330_, boolean p_53331_, Direction p_53332_)
+    public boolean connectsTo(BlockState state, boolean sturdy_face)
     {
-        boolean flag = this.isSameFence(p_53330_);
-        return flag;
+        if (isSameFence(state)) return true;
+        if (sturdy_face && !isExceptionForConnection(state)) return true;
+        return false;
     }
 
     private boolean isSameFence(BlockState state)
@@ -95,36 +98,30 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext p_53304_)
+    public BlockState getStateForPlacement(BlockPlaceContext context)
     {
-        BlockGetter blockgetter = p_53304_.getLevel();
-        BlockPos blockpos = p_53304_.getClickedPos();
-        FluidState fluidstate = p_53304_.getLevel().getFluidState(p_53304_.getClickedPos());
-        BlockPos blockpos1 = blockpos.north();
-        BlockPos blockpos2 = blockpos.east();
-        BlockPos blockpos3 = blockpos.south();
-        BlockPos blockpos4 = blockpos.west();
-        BlockState blockstate = blockgetter.getBlockState(blockpos1);
-        BlockState blockstate1 = blockgetter.getBlockState(blockpos2);
-        BlockState blockstate2 = blockgetter.getBlockState(blockpos3);
-        BlockState blockstate3 = blockgetter.getBlockState(blockpos4);
-        return super.getStateForPlacement(p_53304_)
-                .setValue(NORTH, Boolean.valueOf(this.connectsTo(blockstate, true, Direction.SOUTH)))
-                .setValue(EAST, Boolean.valueOf(this.connectsTo(blockstate1, true, Direction.WEST)))
-                .setValue(SOUTH, Boolean.valueOf(this.connectsTo(blockstate2, true, Direction.NORTH)))
-                .setValue(WEST, Boolean.valueOf(this.connectsTo(blockstate3, true, Direction.EAST)))
-                .setValue(IFlowingBlock.WATERLOGGED, Boolean.valueOf(fluidstate.getType() == Fluids.WATER));
+        Level blockgetter = context.getLevel();
+        BlockPos blockpos = context.getClickedPos();
+        FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
+        BlockState prev = super.getStateForPlacement(context).setValue(IFlowingBlock.WATERLOGGED,
+                Boolean.valueOf(fluidstate.getType() == Fluids.WATER));
+        for (Direction dir : Direction.values())
+        {
+            BlockPos pos = blockpos.relative(dir);
+            BlockState state = blockgetter.getBlockState(pos);
+            boolean sturdy = state.isFaceSturdy(blockgetter, pos, dir.getOpposite());
+            prev = prev.setValue(PROPERTY_BY_DIRECTION.get(dir), this.connectsTo(state, sturdy));
+            if (isSameFence(state)) state.updateShape(dir, prev, blockgetter, blockpos, pos);
+        }
+        return prev;
     }
 
-    @Deprecated
     @Override
-    public BlockState updateShape(BlockState p_53323_, Direction p_53324_, BlockState p_53325_, LevelAccessor p_53326_,
-            BlockPos p_53327_, BlockPos p_53328_)
+    public BlockState updateShape(BlockState state, Direction direction, BlockState otherState, LevelAccessor level,
+            BlockPos pos_1, BlockPos pos_2)
     {
-        return p_53324_.getAxis().getPlane() == Direction.Plane.HORIZONTAL
-                ? p_53323_.setValue(PROPERTY_BY_DIRECTION.get(p_53324_),
-                        Boolean.valueOf(this.connectsTo(p_53325_, true, p_53324_.getOpposite())))
-                : super.updateShape(p_53323_, p_53324_, p_53325_, p_53326_, p_53327_, p_53328_);
+        boolean sturdy = otherState.isFaceSturdy(level, pos_2, direction.getOpposite());
+        return state.setValue(PROPERTY_BY_DIRECTION.get(direction), this.connectsTo(otherState, sturdy));
     }
 
     @Override
@@ -153,7 +150,7 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
             return Fluids.WATER.getSource(false);
         if (!flows(state)) return Fluids.EMPTY.defaultFluidState();
         int amt = this.getAmount(state);
-        if (amt == 0) return super.getFluidState(state);
+        if (amt == 0) return Fluids.EMPTY.defaultFluidState();
         if (amt < 2) amt = 2;
         if (amt > 16) amt = 16;
         return Concrete.CONCRETE_FLUID_FLOWING.get().defaultFluidState().setValue(FlowingFluid.LEVEL, amt / 2);
@@ -268,6 +265,6 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     {
         int i = this.getAABBIndex(state);
         if (i == 0) return false;
-        return super.isLadder(state, world, pos, entity);
+        return true;
     }
 }

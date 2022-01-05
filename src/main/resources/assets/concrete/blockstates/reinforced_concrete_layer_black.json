@@ -2,7 +2,22 @@
   "multipart": [
     {
       "apply": {
-        "model": "concrete:block/rebar_post"
+        "model": "concrete:block/rebar_post",
+        "uvlock": true
+      }
+    },
+    {
+      "apply": {
+        "model": "concrete:block/rebar_post",
+        "uvlock": true,
+        "y": 90
+      }
+    },
+    {
+      "apply": {
+        "model": "concrete:block/rebar_post",
+        "uvlock": true,
+        "x": 90
       }
     },
     {
@@ -46,10 +61,22 @@
     },
     {
       "when": {
-        "layers": 1
+        "up": "true"
       },
       "apply": {
-        "model": "concrete:block/concrete_layer_black_1"
+        "x": 270,
+        "model": "concrete:block/rebar_side",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "down": "true"
+      },
+      "apply": {
+        "x": 90,
+        "model": "concrete:block/rebar_side",
+        "uvlock": true
       }
     },
     {
@@ -57,7 +84,7 @@
         "layers": 1
       },
       "apply": {
-        "model": "concrete:block/rebar_post"
+        "model": "concrete:block/concrete_layer_black_1"
       }
     },
     {
@@ -70,26 +97,10 @@
     },
     {
       "when": {
-        "layers": 2
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 3
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_3"
-      }
-    },
-    {
-      "when": {
-        "layers": 3
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -102,26 +113,10 @@
     },
     {
       "when": {
-        "layers": 4
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 5
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_5"
-      }
-    },
-    {
-      "when": {
-        "layers": 5
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -134,26 +129,10 @@
     },
     {
       "when": {
-        "layers": 6
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 7
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_7"
-      }
-    },
-    {
-      "when": {
-        "layers": 7
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -166,26 +145,10 @@
     },
     {
       "when": {
-        "layers": 8
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 9
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_9"
-      }
-    },
-    {
-      "when": {
-        "layers": 9
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -198,26 +161,10 @@
     },
     {
       "when": {
-        "layers": 10
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 11
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_11"
-      }
-    },
-    {
-      "when": {
-        "layers": 11
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -230,26 +177,10 @@
     },
     {
       "when": {
-        "layers": 12
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 13
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_13"
-      }
-    },
-    {
-      "when": {
-        "layers": 13
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {
@@ -262,26 +193,10 @@
     },
     {
       "when": {
-        "layers": 14
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
-      }
-    },
-    {
-      "when": {
         "layers": 15
       },
       "apply": {
         "model": "concrete:block/concrete_layer_black_15"
-      }
-    },
-    {
-      "when": {
-        "layers": 15
-      },
-      "apply": {
-        "model": "concrete:block/rebar_post"
       }
     },
     {

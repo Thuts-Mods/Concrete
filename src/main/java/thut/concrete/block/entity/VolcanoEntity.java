@@ -252,7 +252,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
             {
                 if (owner.getLevel().getRandom().nextDouble() < 0.0025 && tubes.isEmpty() && !stable)
                 {
-                    ExplosionCustom boom = new ExplosionCustom(owner.getLevel(), null,
+                    ExplosionCustom boom = new ExplosionCustom((ServerLevel) owner.getLevel(), null,
                             Vector3.getNewVector().set(location.above((int) size + 5)),
                             owner.getLevel().getRandom().nextInt(25));
                     boom.breaker = new ChamberBoom(viscosity);
