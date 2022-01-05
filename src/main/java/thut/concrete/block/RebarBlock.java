@@ -149,6 +149,9 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
     public FluidState getFluidState(BlockState state)
     {
         if (isFalling(state)) return Fluids.EMPTY.defaultFluidState();
+        if (state.hasProperty(IFlowingBlock.WATERLOGGED) && state.getValue(IFlowingBlock.WATERLOGGED))
+            return Fluids.WATER.getSource(false);
+        if (!flows(state)) return Fluids.EMPTY.defaultFluidState();
         int amt = this.getAmount(state);
         if (amt == 0) return super.getFluidState(state);
         if (amt < 2) amt = 2;
@@ -194,7 +197,7 @@ public class RebarBlock extends CrossCollisionBlock implements SimpleWaterlogged
             mergeInto = this.setAmount(mergeInto, this.getExistingAmount(mergeFrom, posTo, level));
         }
         BlockState ret = IFlowingBlock.super.getMergeResult(mergeFrom, mergeInto, posTo, level);
-        if (ret.getBlock() == this)
+        if (ret.getBlock() instanceof RebarBlock)
         {
             ret = IFlowingBlock.copyValidTo(mergeFrom, ret);
             ret = this.setAmount(ret, this.getExistingAmount(ret, posTo, level));

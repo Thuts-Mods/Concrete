@@ -7,11 +7,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +30,7 @@ import thut.api.block.flowing.MoltenBlock;
 import thut.api.boom.ExplosionCustom;
 import thut.api.boom.ExplosionCustom.BlockBreaker;
 import thut.api.maths.Vector3;
+import thut.api.terrain.BiomeDatabase;
 import thut.concrete.Concrete;
 import thut.concrete.block.VolcanoBlock;
 
@@ -34,6 +38,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
 {
     public static abstract class Part implements INBTSerializable<CompoundTag>
     {
+        Biome vol_biome = null;
         long completed = -1;
 
         @Override
@@ -93,8 +98,11 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                 double length = dir.length();
                 dir = dir.normalize();
 
+                int magma = 0;
+                int total = 0;
+
                 Set<BlockPos> checked = Sets.newHashSet();
-                boolean done = true;
+
                 for (int i = 0; i < length; i++)
                 {
                     BlockPos p = new BlockPos(start.add(dir.scale(i)));
@@ -108,17 +116,19 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                     {
                         if (checked.contains(p2)) continue;
                         checked.add(p2 = p2.immutable());
+                        total++;
                         if (!isMagma(owner, p2))
                         {
                             setMagma(owner.getLevel(), p2, viscosity);
-                            done = false;
                         }
+                        else magma++;
                     }
                 }
-                if (done) completed = Tracker.instance().getTick() + 60;
+                if (total - magma < 5) completed = Tracker.instance().getTick() + 60;
             }
             else if (source.stable)
             {
+                System.out.println("ticking dest node");
                 dest.tick(owner, viscosity);
             }
         }
@@ -193,6 +203,8 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                         level.scheduleTick(pos, set.getBlock(), 2);
                     }
                 }
+                Vector3 v = Vector3.getNewVector().set(pos);
+                v.setBiome(BiomeDatabase.getBiome(Concrete.VOLCANO_BIOME), level);
                 return to;
             }
         }
@@ -220,9 +232,12 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                 int molten = 0;
                 int total = 0;
 
+                MutableBlockPos b = location.mutable();
+
                 for (int x = -r; x <= r; x++) for (int y = -r; y <= r; y++) for (int z = -r; z <= r; z++)
                 {
-                    BlockPos pos = location.north(x).above(y).east(z);
+                    b.set(location);
+                    BlockPos pos = b.move(Direction.UP, x).move(Direction.EAST, y).move(Direction.NORTH, z);
                     total++;
                     if (isMagma(owner, pos))
                     {
@@ -243,6 +258,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                     boom.breaker = new ChamberBoom(viscosity);
                     boom.doExplosion();
                 }
+                System.out.println("ticking tubes (" + tubes.size() + ")");
                 for (Tube t : tubes) t.tick(owner, viscosity);
             }
         }
@@ -323,7 +339,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
             }
         }
         if (level.getGameTime() % 10 != 0) return;
-        if (level.getGameTime() % 100 == 0) System.out.println("tick");
+        level.noSave = false;
 //        if (this.hasLevel()) return;
         int v = this.getBlockState().getValue(VolcanoBlock.VISCOSITY);
         mainChamber.tick(this, v);

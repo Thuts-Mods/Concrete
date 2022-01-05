@@ -1,13 +1,18 @@
 package thut.concrete;
 
 import java.lang.reflect.Array;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import org.apache.commons.compress.utils.Lists;
 
 import com.google.common.collect.Sets;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
@@ -16,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -27,6 +33,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
@@ -39,10 +46,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import thut.api.block.flowing.FlowingBlock;
-import thut.api.block.flowing.MoltenBlock;
 import thut.api.block.flowing.SolidBlock;
 import thut.concrete.block.ConcreteBlock;
 import thut.concrete.block.FormworkBlock;
+import thut.concrete.block.LavaBlock;
 import thut.concrete.block.RebarBlock;
 import thut.concrete.block.ReinforcedConcreteBlock;
 import thut.concrete.block.VolcanoBlock;
@@ -113,6 +120,8 @@ public class Concrete
     public static final RegistryObject<Item> CAO_ITEM;
     public static final RegistryObject<Item> CACO3_ITEM;
 
+    public static final ResourceKey<Biome> VOLCANO_BIOME;
+
     private static ForgeFlowingFluid.Properties makeProperties()
     {
         return new ForgeFlowingFluid.Properties(CONCRETE_FLUID, CONCRETE_FLUID_FLOWING,
@@ -158,6 +167,8 @@ public class Concrete
         BRUSH_DYE_RECIPE = Concrete.RECIPE_SERIALIZERS.register("paint_brush_dye",
                 PaintBrushRecipe.brushDye(PaintBrushRecipe::new));
 
+        VOLCANO_BIOME = ResourceKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(MODID, "volcano"));
+
         BlockBehaviour.Properties layer_props = BlockBehaviour.Properties.of(Material.STONE).noOcclusion().randomTicks()
                 .requiresCorrectToolForDrops();
         BlockBehaviour.Properties block_props = BlockBehaviour.Properties.of(Material.STONE).randomTicks()
@@ -185,7 +196,7 @@ public class Concrete
         ResourceLocation solid_layer = new ResourceLocation(MODID, "solid_layer");
         ResourceLocation solid_block = new ResourceLocation(MODID, "solid_block");
 
-        regs = MoltenBlock.makeMolten(BLOCKS, MODID, "molten_layer", "molten_block", layer_props, block_props,
+        regs = LavaBlock.makeLava(BLOCKS, MODID, "molten_layer", "molten_block", layer_props, block_props,
                 solid_layer, solid_block);
 
         MOLTEN_LAYER = regs[0];
@@ -339,6 +350,13 @@ public class Concrete
         event.enqueueWork(() -> {
             DispenserBlock.registerBehavior(BUCKET.get(), ConcreteDispenseBehaviour.INSTANCE);
             DispenserBlock.registerBehavior(WET_BLOCK_ITEM.get(), ConcreteDispenseBehaviour.INSTANCE);
+
+            List<BiomeDictionary.Type> types = Lists.newArrayList();
+            types.add(BiomeDictionary.Type.OVERWORLD);
+            types.add(BiomeDictionary.Type.HOT);
+            types.add(BiomeDictionary.Type.getType("volcano"));
+
+            BiomeDictionary.addTypes(VOLCANO_BIOME, types.toArray(new BiomeDictionary.Type[0]));
         });
     }
 }
