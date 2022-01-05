@@ -227,59 +227,84 @@ rots["down"] = {"x":90}
 
 true = True
 
+def add_centre(obj, path, when, tex_mod=''):
+    apply = {}
+    apply["model"] = f"{path}rebar_post{tex_mod}"
+    apply["uvlock"] = true
+    condition = {}
+    condition["apply"] = apply
+    if when is not None:
+        condition["when"] = when
+    obj["multipart"].append(condition)
+
+    apply = {}
+    apply["model"] = f"{path}rebar_post{tex_mod}"
+    apply["uvlock"] = true
+    apply["y"] = 90
+    condition = {}
+    condition["apply"] = apply
+    if when is not None:
+        condition["when"] = when
+    obj["multipart"].append(condition)
+
+    apply = {}
+    apply["model"] = f"{path}rebar_post{tex_mod}"
+    apply["uvlock"] = true
+    apply["x"] = 90
+    condition = {}
+    condition["apply"] = apply
+    if when is not None:
+        condition["when"] = when
+    obj["multipart"].append(condition)
+
+def add_post(obj, path, rot, when, tex_mod=''):
+
+    apply = {}
+    for key2,value2 in rot.items():
+        apply[key2] = value2
+    apply["model"] = f"{path}rebar_side{tex_mod}"
+    apply["uvlock"] = true
+
+    condition = {}
+    condition["when"] = when
+    condition["apply"] = apply
+
+    obj["multipart"].append(condition)
+
 def make_rebar_internal(name,concrete,level,item="rebar_post", state_name=None, value=None):
     path = 'concrete:block/'
     
     obj = {}
     obj["multipart"] = []
     
+    when_rusty = {}
+    when_rusty['rusty'] = 'true'
+    when_not_rusty = {}
+    when_not_rusty['rusty'] = 'false'
     # The post in the middle
-    apply = {}
-    apply["model"] = f"{path}rebar_post"
-    apply["uvlock"] = true
-    condition = {}
-    condition["apply"] = apply
-    obj["multipart"].append(condition)
-
-    apply = {}
-    apply["model"] = f"{path}rebar_post"
-    apply["uvlock"] = true
-    apply["y"] = 90
-    condition = {}
-    condition["apply"] = apply
-    obj["multipart"].append(condition)
-
-    apply = {}
-    apply["model"] = f"{path}rebar_post"
-    apply["uvlock"] = true
-    apply["x"] = 90
-    condition = {}
-    condition["apply"] = apply
-    obj["multipart"].append(condition)
+    add_centre(obj, path, when_not_rusty)
+    add_centre(obj, path, when_rusty, tex_mod='_rusty')
 
     # The sides connecting outwards
     for key, rot in rots.items():
         when = {}
         when[key] = "true"
+        for key2,value2 in when_not_rusty.items():
+            when[key2] = value2
+        add_post(obj, path, rot, when)
 
-        apply = rot
-        apply["model"] = f"{path}rebar_side"
-        apply["uvlock"] = true
-
-        condition = {}
-        condition["when"] = when
-        condition["apply"] = apply
-
-        obj["multipart"].append(condition)
+        when = {}
+        when[key] = "true"
+        for key2,value2 in when_rusty.items():
+            when[key2] = value2
+        add_post(obj, path, rot, when, tex_mod='_rusty')
 
     # The concrete
     if level != 'level':
         for i in range(15):
-
             model_key = f'{path}{concrete}_layer_{i+1}'
             if value is not None:
                 model_key = f'{path}{concrete}_layer_{value}_{i+1}'
-
             obj["multipart"].append({'when':{level:i+1},"apply":{"model":model_key}})
 
         model_key = f'{path}{concrete}_block'
@@ -417,7 +442,6 @@ def make_concrete_states(name, override=None, air=False,coloured=True):
             make_concrete_state(name, override, air, value)
     else:
         make_concrete_state(name, override, air)
-
 
 def make_concrete_block(name, air=False, value=None):
     path = 'concrete:block/'

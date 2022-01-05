@@ -88,6 +88,7 @@ public class RebarBlock extends PipeBlock implements SimpleWaterloggedBlock, IFl
     public boolean connectsTo(BlockState state, boolean sturdy_face)
     {
         if (isSameFence(state)) return true;
+        if (state.getBlock() instanceof FormworkBlock) return false;
         if (sturdy_face && !isExceptionForConnection(state)) return true;
         return false;
     }

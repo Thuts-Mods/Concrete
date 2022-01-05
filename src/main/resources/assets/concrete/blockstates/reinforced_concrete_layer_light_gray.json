@@ -4,6 +4,9 @@
       "apply": {
         "model": "concrete:block/rebar_post",
         "uvlock": true
+      },
+      "when": {
+        "rusty": "false"
       }
     },
     {
@@ -11,6 +14,9 @@
         "model": "concrete:block/rebar_post",
         "uvlock": true,
         "y": 90
+      },
+      "when": {
+        "rusty": "false"
       }
     },
     {
@@ -18,11 +24,44 @@
         "model": "concrete:block/rebar_post",
         "uvlock": true,
         "x": 90
+      },
+      "when": {
+        "rusty": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "concrete:block/rebar_post_rusty",
+        "uvlock": true
+      },
+      "when": {
+        "rusty": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "concrete:block/rebar_post_rusty",
+        "uvlock": true,
+        "y": 90
+      },
+      "when": {
+        "rusty": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "concrete:block/rebar_post_rusty",
+        "uvlock": true,
+        "x": 90
+      },
+      "when": {
+        "rusty": "true"
       }
     },
     {
       "when": {
-        "north": "true"
+        "north": "true",
+        "rusty": "false"
       },
       "apply": {
         "model": "concrete:block/rebar_side",
@@ -31,7 +70,18 @@
     },
     {
       "when": {
-        "east": "true"
+        "north": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "model": "concrete:block/rebar_side_rusty",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "rusty": "false"
       },
       "apply": {
         "y": 90,
@@ -41,7 +91,19 @@
     },
     {
       "when": {
-        "south": "true"
+        "east": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "y": 90,
+        "model": "concrete:block/rebar_side_rusty",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "rusty": "false"
       },
       "apply": {
         "y": 180,
@@ -51,7 +113,19 @@
     },
     {
       "when": {
-        "west": "true"
+        "south": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "y": 180,
+        "model": "concrete:block/rebar_side_rusty",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "rusty": "false"
       },
       "apply": {
         "y": 270,
@@ -61,7 +135,19 @@
     },
     {
       "when": {
-        "up": "true"
+        "west": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "y": 270,
+        "model": "concrete:block/rebar_side_rusty",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "up": "true",
+        "rusty": "false"
       },
       "apply": {
         "x": 270,
@@ -71,11 +157,34 @@
     },
     {
       "when": {
-        "down": "true"
+        "up": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "x": 270,
+        "model": "concrete:block/rebar_side_rusty",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "down": "true",
+        "rusty": "false"
       },
       "apply": {
         "x": 90,
         "model": "concrete:block/rebar_side",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "down": "true",
+        "rusty": "true"
+      },
+      "apply": {
+        "x": 90,
+        "model": "concrete:block/rebar_side_rusty",
         "uvlock": true
       }
     },
