@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "values": {
+        "preset": "volcanoes",
+        "types": "volcano"
+      }
+    }
+}
