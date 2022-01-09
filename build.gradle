@@ -87,7 +87,7 @@ dependencies {
     
     // Here we import the version of pokecube to use. Note that the curseforge page is 'aoi' rather than 'aio'
     // fg.deobf("curse.maven:thutcore-${version_thutcore_sup}")
-    implementation "blank:thutcore-1.18.1-8.6.2-deobf"
+    implementation "blank:thutcore-1.18.1-8.6.3-deobf"
 }
 
 jar {
@@ -148,5 +148,5 @@ def gitVersion(value) {
     //    ver = 0
     //}
     //return "${value}.${ver}"
-    return "${value}.1"
+    return "${value}.2"
 }

@@ -124,11 +124,11 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                         else magma++;
                     }
                 }
-                if (total - magma < 5) completed = Tracker.instance().getTick() + 60;
+                if (total - magma < total / 20) completed = Tracker.instance().getTick() + 60;
             }
             else if (source.stable)
             {
-                System.out.println("ticking dest node");
+//                System.out.println("ticking dest node");
                 dest.tick(owner, viscosity);
             }
         }
@@ -245,7 +245,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                     }
                     else setMagma(owner.getLevel(), pos, viscosity);
                 }
-                if (total - molten < 10) completed = Tracker.instance().getTick() + 60;
+                if (total - molten < total / 20) completed = Tracker.instance().getTick() + 60;
                 stable = total == molten;
             }
             else
@@ -258,7 +258,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                     boom.breaker = new ChamberBoom(viscosity);
                     boom.doExplosion();
                 }
-                System.out.println("ticking tubes (" + tubes.size() + ")");
+//                System.out.println("ticking tubes (" + tubes.size() + ")");
                 for (Tube t : tubes) t.tick(owner, viscosity);
             }
         }
