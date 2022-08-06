@@ -85,8 +85,9 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${version_minecraft}-${version_forge}"
     
-    // Here we import the version of pokecube to use. Note that the curseforge page is 'aoi' rather than 'aio'
-    implementation fg.deobf("curse.maven:thutcore-${version_thutcore_sup}")
+    // Here we import the version of thutcore
+    //implementation fg.deobf("curse.maven:thutcore-${version_thutcore_sup}")
+    implementation "blank:thutcore-1.18.2-8.8.0-deobf"
 }
 
 jar {
