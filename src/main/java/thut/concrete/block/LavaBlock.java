@@ -4,9 +4,11 @@ import java.lang.reflect.Array;
 import java.util.Random;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,7 +21,6 @@ import thut.api.block.flowing.FlowingBlock;
 import thut.api.block.flowing.MoltenBlock;
 import thut.api.block.flowing.SolidBlock;
 import thut.api.maths.Vector3;
-import thut.api.terrain.BiomeDatabase;
 import thut.concrete.Concrete;
 
 public abstract class LavaBlock extends MoltenBlock
@@ -59,8 +60,9 @@ public abstract class LavaBlock extends MoltenBlock
     @Override
     protected void onHarden(BlockState state, BlockState solidTo, ServerLevel level, BlockPos pos, Random random)
     {
-        Vector3 v = Vector3.getNewVector().set(pos);
-        v.setBiome(BiomeDatabase.getBiome(Concrete.VOLCANO_BIOME), level);
+        Vector3 v = new Vector3().set(pos);
+        Biome b = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).get(Concrete.VOLCANO_BIOME);
+        v.setBiome(b, level);
     }
 
     public static class FullMolten extends LavaBlock

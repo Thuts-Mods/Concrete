@@ -7,8 +7,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -30,7 +31,6 @@ import thut.api.block.flowing.MoltenBlock;
 import thut.api.boom.ExplosionCustom;
 import thut.api.boom.ExplosionCustom.BlockBreaker;
 import thut.api.maths.Vector3;
-import thut.api.terrain.BiomeDatabase;
 import thut.concrete.Concrete;
 import thut.concrete.block.VolcanoBlock;
 
@@ -191,11 +191,11 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                     if (!set.isAir())
                     {
                         int n = 20;
-                        Vector3 hit = Vector3.getNextSurfacePoint(level, Vector3.getNewVector().set(pos),
+                        Vector3 hit = Vector3.getNextSurfacePoint(level, new Vector3().set(pos),
                                 Vector3.secondAxis, 20);
                         while (hit != null && n-- > 0)
                         {
-                            hit = Vector3.getNextSurfacePoint(level, Vector3.getNewVector().set(pos),
+                            hit = Vector3.getNextSurfacePoint(level, new Vector3().set(pos),
                                     Vector3.secondAxis, 20);
                         }
                         pos = pos.above(n);
@@ -203,8 +203,9 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                         level.scheduleTick(pos, set.getBlock(), 2);
                     }
                 }
-                Vector3 v = Vector3.getNewVector().set(pos);
-                v.setBiome(BiomeDatabase.getBiome(Concrete.VOLCANO_BIOME), level);
+                Vector3 v = new Vector3().set(pos);
+                Biome b = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).get(Concrete.VOLCANO_BIOME);
+                v.setBiome(b, level);
                 return to;
             }
         }
@@ -253,7 +254,7 @@ public class VolcanoEntity extends BlockEntity implements ITickTile
                 if (owner.getLevel().getRandom().nextDouble() < 0.0025 && tubes.isEmpty() && !stable)
                 {
                     ExplosionCustom boom = new ExplosionCustom((ServerLevel) owner.getLevel(), null,
-                            Vector3.getNewVector().set(location.above((int) size + 5)),
+                            new Vector3().set(location.above((int) size + 5)),
                             owner.getLevel().getRandom().nextInt(25));
                     boom.breaker = new ChamberBoom(viscosity);
                     boom.doExplosion();

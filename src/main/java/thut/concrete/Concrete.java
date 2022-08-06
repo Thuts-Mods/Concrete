@@ -33,7 +33,6 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
@@ -350,13 +349,19 @@ public class Concrete
         event.enqueueWork(() -> {
             DispenserBlock.registerBehavior(BUCKET.get(), ConcreteDispenseBehaviour.INSTANCE);
             DispenserBlock.registerBehavior(WET_BLOCK_ITEM.get(), ConcreteDispenseBehaviour.INSTANCE);
+            initBiomeDict();
+       });
+    }
 
-            List<BiomeDictionary.Type> types = Lists.newArrayList();
-            types.add(BiomeDictionary.Type.OVERWORLD);
-            types.add(BiomeDictionary.Type.HOT);
-            types.add(BiomeDictionary.Type.getType("volcano"));
+	@SuppressWarnings("deprecation")
+    private void initBiomeDict() 
+    {
+		List<net.minecraftforge.common.BiomeDictionary.Type> types = Lists.newArrayList();
+         types.add(net.minecraftforge.common.BiomeDictionary.Type.OVERWORLD);
+         types.add(net.minecraftforge.common.BiomeDictionary.Type.HOT);
+         types.add(net.minecraftforge.common.BiomeDictionary.Type.getType("volcano"));
 
-            BiomeDictionary.addTypes(VOLCANO_BIOME, types.toArray(new BiomeDictionary.Type[0]));
-        });
+         net.minecraftforge.common.BiomeDictionary.addTypes(VOLCANO_BIOME, types.toArray(new net.minecraftforge.common.BiomeDictionary.Type[0]));
+     
     }
 }

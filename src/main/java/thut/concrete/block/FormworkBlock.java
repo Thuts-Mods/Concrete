@@ -116,9 +116,7 @@ public class FormworkBlock extends Block implements SimpleWaterloggedBlock
         {
             if (p_56032_.getValue(DISTANCE) == STABILITY_MAX_DISTANCE)
             {
-                p_56033_.addFreshEntity(new FallingBlockEntity(p_56033_, (double) p_56034_.getX() + 0.5D,
-                        (double) p_56034_.getY(), (double) p_56034_.getZ() + 0.5D,
-                        blockstate.setValue(WATERLOGGED, Boolean.valueOf(false))));
+            	FallingBlockEntity.fall(p_56033_, p_56034_, blockstate);
             }
             else
             {

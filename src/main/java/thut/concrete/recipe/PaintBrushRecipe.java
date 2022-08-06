@@ -7,9 +7,9 @@ import java.util.function.Supplier;
 import com.google.common.collect.Maps;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -32,16 +32,16 @@ public class PaintBrushRecipe extends CustomRecipe
         return () -> new SimpleRecipeSerializer<>(create);
     }
 
-    private static Map<DyeColor, Tag<Item>> DYETAGS = Maps.newHashMap();
+    private static Map<DyeColor, TagKey<Item>> DYETAGS = Maps.newHashMap();
 
-    public static Map<DyeColor, Tag<Item>> getDyeTagMap()
+    public static Map<DyeColor, TagKey<Item>> getDyeTagMap()
     {
-        if (PaintBrushRecipe.DYETAGS.isEmpty()) for (final DyeColor colour : DyeColor.values())
+        if (DYETAGS.isEmpty()) for (final DyeColor colour : DyeColor.values())
         {
             final ResourceLocation tag = new ResourceLocation("forge", "dyes/" + colour.getName());
-            PaintBrushRecipe.DYETAGS.put(colour, ItemTags.getAllTags().getTagOrEmpty(tag));
+            DYETAGS.put(colour, TagKey.create(Registry.ITEM_REGISTRY, tag));
         }
-        return PaintBrushRecipe.DYETAGS;
+        return DYETAGS;
     }
 
     public PaintBrushRecipe(ResourceLocation loc)
@@ -65,7 +65,7 @@ public class PaintBrushRecipe extends CustomRecipe
                 brush = true;
                 continue;
             }
-            final Tag<Item> dyeTag = Tags.Items.DYES;
+            final TagKey<Item> dyeTag = Tags.Items.DYES;
             if (stack.is(dyeTag))
             {
                 if (dye) return false;
@@ -87,7 +87,7 @@ public class PaintBrushRecipe extends CustomRecipe
             if (stack.isEmpty()) continue;
             boolean isBrush = stack.getItem() instanceof PaintBrush br;
             if (isBrush) continue;
-            final Tag<Item> dyeTag = Tags.Items.DYES;
+            final TagKey<Item> dyeTag = Tags.Items.DYES;
             if (stack.is(dyeTag))
             {
                 dye = stack;
@@ -96,7 +96,7 @@ public class PaintBrushRecipe extends CustomRecipe
             return ItemStack.EMPTY;
         }
         DyeColor dyeColour = null;
-        final Map<DyeColor, Tag<Item>> tags = getDyeTagMap();
+        final Map<DyeColor, TagKey<Item>> tags = getDyeTagMap();
         for (final DyeColor colour : DyeColor.values()) if (dye.is(tags.get(colour)))
         {
             dyeColour = colour;
