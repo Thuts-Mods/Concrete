@@ -2,7 +2,10 @@ package thut.concrete;
 
 import java.lang.reflect.Array;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.Sets;
 
@@ -27,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -127,7 +131,41 @@ public class Concrete
     }
 
     public static RegistryObject<FluidType> CONCRETE_FLUID_TYPE = FLUID_TYPES.register("liquid_concrete",
-            () -> new FluidType(FluidType.Properties.create()));
+            () -> new FluidType(FluidType.Properties.create())
+            {
+                @Override
+                public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer)
+                {
+                    consumer.accept(new IClientFluidTypeExtensions()
+                    {
+                        @Override
+                        public ResourceLocation getStillTexture()
+                        {
+                            return FLUID_STILL;
+                        }
+
+                        @Override
+                        public ResourceLocation getFlowingTexture()
+                        {
+                            return FLUID_FLOWING;
+                        }
+
+                        @Nullable
+                        @Override
+                        public ResourceLocation getOverlayTexture()
+                        {
+                            return FLUID_OVERLAY;
+                        }
+
+                        @Override
+                        public int getTintColor()
+                        {
+                            return 0xFFAAAAAA;
+                        }
+                    });
+                }
+            });
+
     public static RegistryObject<FlowingFluid> CONCRETE_FLUID = FLUIDS.register("concrete",
             () -> new ForgeFlowingFluid.Source(makeProperties()));
     public static RegistryObject<FlowingFluid> CONCRETE_FLUID_FLOWING = FLUIDS.register("concrete_flowing",
