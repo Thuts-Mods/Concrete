@@ -23,7 +23,7 @@ import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.Tags;
 import thut.concrete.Concrete;
 import thut.concrete.item.PaintBrush;
-import thut.lib.RegHelper;
+import thut.api.util.RegHelper;
 
 public class PaintBrushRecipe extends CustomRecipe
 {
@@ -34,13 +34,13 @@ public class PaintBrushRecipe extends CustomRecipe
         return () -> new SimpleCraftingRecipeSerializer<>(create);
     }
 
-    private static Map<DyeColor, TagKey<Item>> DYETAGS = Maps.newHashMap();
+    private static final Map<DyeColor, TagKey<Item>> DYETAGS = Maps.newHashMap();
 
     public static Map<DyeColor, TagKey<Item>> getDyeTagMap()
     {
         if (DYETAGS.isEmpty()) for (final DyeColor colour : DyeColor.values())
         {
-            final ResourceLocation tag = ResourceLocation.fromNamespaceAndPath("forge", "dyes/" + colour.getName());
+            final ResourceLocation tag = ResourceLocation.fromNamespaceAndPath("c", "dyes/" + colour.getName());
             DYETAGS.put(colour, TagKey.create(RegHelper.ITEM_REGISTRY, tag));
         }
         return DYETAGS;
@@ -105,8 +105,7 @@ public class PaintBrushRecipe extends CustomRecipe
             break;
         }
         if (dyeColour == null) return ItemStack.EMPTY;
-        ItemStack brush = new ItemStack(Concrete.BRUSHES[dyeColour.ordinal()].get());
-        return brush;
+        return new ItemStack(Concrete.BRUSHES[dyeColour.ordinal()].get());
     }
 
     @Override
@@ -124,7 +123,7 @@ public class PaintBrushRecipe extends CustomRecipe
     @Override
     public NonNullList<ItemStack> getRemainingItems(final CraftingInput inv)
     {
-        final NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.size(),
+        final NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inv.size(),
                 ItemStack.EMPTY);
         for (int i = 0; i < nonnulllist.size(); ++i)
         {
